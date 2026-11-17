@@ -30,7 +30,10 @@ public class Main {
             if (input == null) {
                 break;
             }
-
+            if (validarInteiro(input) == false) {
+                JOptionPane.showMessageDialog(null, "Opção inválida!");
+                continue;
+            }
             opcao = Integer.parseInt(input);
 
             switch (opcao) {
@@ -103,7 +106,7 @@ public class Main {
         if (documento == null) {
             return;
         }
-        if (documento.equals("")) {
+        if (validarTexto(documento) == false) {
             JOptionPane.showMessageDialog(null, "Documento inválido!");
             return;
         }
@@ -115,7 +118,7 @@ public class Main {
         if (descricao == null) {
             return;
         }
-        if (descricao.equals("")) {
+        if (validarTexto(descricao) == false) {
             JOptionPane.showMessageDialog(null, "Descrição inválida!");
             return;
         }
@@ -123,7 +126,7 @@ public class Main {
         if (beneficiario == null) {
             return;
         }
-        if (beneficiario.equals("")) {
+        if (validarTexto(beneficiario) == false) {
             JOptionPane.showMessageDialog(null, "Beneficiário inválido!");
             return;
         }
@@ -244,5 +247,57 @@ public class Main {
         }
         return true;
 
+    }
+
+    static boolean validarInteiro(String entrada) {
+        if (entrada == null) {
+            return false;
+        }
+
+        if (entrada.equals("")) {
+            return false;
+        }
+        for (int i = 0; i < entrada.length(); i++) {
+            char c = entrada.charAt(i);
+
+            if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+        double numero = Double.parseDouble(entrada);
+
+        if (numero > Integer.MAX_VALUE) {
+            return false;
+        }
+        return true;
+    }
+
+    static boolean validarSN(String entrada) {
+        if (entrada == null) {
+            return false;
+        }
+
+        if (entrada.equals("")) {
+            return false;
+        }
+        if (entrada.equals("S") || entrada.equals("s")
+                || entrada.equals("N") || entrada.equals("n")) {
+            return true;
+        }
+        return false;
+    }
+
+    static boolean validarTexto(String entrada) {
+        if (entrada == null) {
+            return false;
+        }
+
+        if (entrada.equals("")) {
+            return false;
+        }
+        if (entrada.trim().equals("")) {
+            return false;
+        }
+        return true;
     }
 }

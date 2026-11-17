@@ -112,6 +112,44 @@ public class Main {
             return;
         }
         String descricao = JOptionPane.showInputDialog("Digite a descrição da conta:");
+        if (descricao == null) {
+            return;
+        }
+        if (descricao.equals("")) {
+            JOptionPane.showMessageDialog(null, "Descrição inválida!");
+            return;
+        }
         String beneficiario = JOptionPane.showInputDialog("Digite o beneficiário:");
+        if (beneficiario == null) {
+            return;
+        }
+        if (beneficiario.equals("")) {
+            JOptionPane.showMessageDialog(null, "Beneficiário inválido!");
+            return;
+        }
+        String entradaValor = JOptionPane.showInputDialog("Digite o valor da conta:");
+
+        if (entradaValor == null) {
+            return;
+        }
+        double valor = Double.parseDouble(entradaValor);
+
+        if (valor <= 0) {
+            JOptionPane.showMessageDialog(null, "Valor inválido!");
+            return;
+        }
+        String entradaData = JOptionPane.showInputDialog("Digite o vencimento (AAAA-MM-DD):");
+        if (entradaData == null) {
+            return;
+        }
+        LocalDate vencimento = LocalDate.parse(entradaData);
+        documentos[quantidade] = documento;
+        descricoes[quantidade] = descricao;
+        beneficiarios[quantidade] = beneficiario;
+        valores[quantidade] = valor;
+        vencimentos[quantidade] = vencimento;
+        saldoDevedor[quantidade] = valor;
+        quantidade++;
+        JOptionPane.showMessageDialog(null, "Conta cadastrada com sucesso!");
     }
 }

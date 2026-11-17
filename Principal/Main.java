@@ -132,6 +132,10 @@ public class Main {
         if (entradaValor == null) {
             return;
         }
+        if (validarValor(entradaValor) == false) {
+            JOptionPane.showMessageDialog(null, "Valor inválido!");
+            return;
+        }
         double valor = Double.parseDouble(entradaValor);
 
         if (valor <= 0) {
@@ -142,6 +146,11 @@ public class Main {
         if (entradaData == null) {
             return;
         }
+        if (validarData(entradaData) == false) {
+            JOptionPane.showMessageDialog(null, "Data inválida!");
+            return;
+        }
+
         LocalDate vencimento = LocalDate.parse(entradaData);
         documentos[quantidade] = documento;
         descricoes[quantidade] = descricao;
@@ -151,5 +160,89 @@ public class Main {
         saldoDevedor[quantidade] = valor;
         quantidade++;
         JOptionPane.showMessageDialog(null, "Conta cadastrada com sucesso!");
+    }
+
+    static boolean validarValor(String entrada) {
+        if (entrada == null) {
+            return false;
+        }
+
+        if (entrada.equals("")) {
+            return false;
+        }
+        int pontos = 0;
+        int numeros = 0;
+        for (int i = 0; i < entrada.length(); i++) {
+            char c = entrada.charAt(i);
+            if (c >= '0' && c <= '9') {
+                numeros++;
+            } else if (c == '.') {
+                pontos++;
+            } else {
+                return false;
+            }
+        }
+        if (pontos > 1 || numeros == 0) {
+            return false;
+        }
+        double valor = Double.parseDouble(entrada);
+
+        if (valor <= 0 || valor > Double.MAX_VALUE) {
+            return false;
+        }
+        return true;
+    }
+
+    static boolean validarData(String entrada) {
+        if (entrada == null) {
+            return false;
+        }
+
+        if (entrada.equals("")) {
+            return false;
+        }
+        if (entrada.length() != 10) {
+            return false;
+        }
+        if (entrada.charAt(4) != '-' || entrada.charAt(7) != '-') {
+            return false;
+        }
+        for (int i = 0; i < entrada.length(); i++) {
+            char c = entrada.charAt(i);
+
+            if (i != 4 && i != 7) {
+                if (c < '0' || c > '9') {
+                    return false;
+                }
+            }
+        }
+        int ano = Integer.parseInt(entrada.substring(0, 4));
+        int mes = Integer.parseInt(entrada.substring(5, 7));
+        int dia = Integer.parseInt(entrada.substring(8, 10));
+        if (mes < 1 || mes > 12) {
+            return false;
+        }
+
+        if (dia < 1 || dia > 31) {
+            return false;
+        }
+        if (mes == 4 || mes == 6 || mes == 9 || mes == 11) {
+            if (dia > 30) {
+                return false;
+            }
+        }
+        if (mes == 2) {
+            if (ano % 400 == 0 || (ano % 4 == 0 && ano % 100 != 0)) {
+                if (dia > 29) {
+                    return false;
+                }
+            } else {
+                if (dia > 28) {
+                    return false;
+                }
+            }
+        }
+        return true;
+
     }
 }

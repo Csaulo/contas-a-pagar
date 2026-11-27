@@ -14,6 +14,163 @@ public class Main {
     static double[] saldoDevedor = new double[TAM];
     static boolean[] pagas = new boolean[TAM];
 
+    static void resumoFinanceiro() {
+
+        int totalPagas = 0;
+        int totalPendentes = 0;
+        int totalVencidas = 0;
+        double valorTotal = 0;
+        double valorPago = 0;
+        double valorVencido = 0;
+        double valorPendente = 0;
+
+        double totalEmAberto = 0;
+
+        for (int i = 0; i < quantidade; i++) {
+            valorTotal += valores[i];
+
+            if (pagas[i]) {
+                totalPagas++;
+                valorPago += valores[i];
+
+            } else if (vencimentos[i].isBefore(LocalDate.now())) {
+                totalVencidas++;
+                totalEmAberto += valores[i];
+                valorVencido += valores[i];
+
+            } else {
+                totalPendentes++;
+                totalEmAberto += valores[i];
+                valorPendente += valores[i];
+            }
+        }
+        String mensagem = "=== RESUMO FINANCEIRO ===\n\n"
+                + "Total de despesas: " + quantidade
+                + "\nDespesas pagas: " + totalPagas
+                + "\nDespesas pendentes: " + totalPendentes
+                + "\nDespesas vencidas: " + totalVencidas
+                + "\nValor em aberto: R$ " + totalEmAberto
+                + "\n\n=== VALORES FINANCEIROS ==="
+                + "\nValor total cadastrado: R$ " + valorTotal
+                + "\nValor já pago: R$ " + valorPago
+                + "\nValor vencido: R$ " + valorVencido
+                + "\nValor pendente: R$ " + valorPendente;
+        JOptionPane.showMessageDialog(null, mensagem);
+    }
+
+    static void pesquisarConta() {
+
+        if (quantidade == 0) {
+            JOptionPane.showMessageDialog(null, "Nenhuma despesa cadastrada!");
+            return;
+        }
+
+        String opcaoPesquisa = JOptionPane.showInputDialog(
+                "=== PESQUISAR DESPESA ===\n\n"
+                + "1. Pesquisar por documento\n"
+                + "2. Pesquisar por beneficiário\n"
+                + "Digite a opção:"
+        );
+
+        if (opcaoPesquisa == null) {
+            return;
+        }
+
+        switch (opcaoPesquisa) {
+            case "1":
+                pesquisarPorDocumento();
+                break;
+
+            case "2":
+                pesquisarPorBeneficiario();
+                break;
+
+            default:
+                JOptionPane.showMessageDialog(null, "Opção inválida!");
+
+        }
+    }
+
+    static void pesquisarPorDocumento() {
+
+        String documento = JOptionPane.showInputDialog(
+                "Digite o documento da despesa:"
+        );
+
+        if (documento == null) {
+            return;
+        }
+
+        int posicao = localizarConta(documento);
+
+        if (posicao == -1) {
+            JOptionPane.showMessageDialog(null,
+                    "Despesa não encontrada!");
+            return;
+        }
+
+        mostrarDespesa(posicao);
+    }
+
+    static void pesquisarPorBeneficiario() {
+
+        String nome = JOptionPane.showInputDialog(
+                "Digite o nome do beneficiário:"
+        );
+
+        if (nome == null) {
+            return;
+        }
+
+        String mensagem = "";
+        int encontrados = 0;
+
+        for (int i = 0; i < quantidade; i++) {
+
+            if (beneficiarios[i].equalsIgnoreCase(nome.trim())) {
+
+                String situacao = pagas[i] ? "Paga"
+                        : (vencimentos[i].isBefore(LocalDate.now())
+                        ? "Vencida" : "Pendente");
+
+                mensagem += "\nDocumento: " + documentos[i]
+                        + "\nBeneficiário: " + beneficiarios[i]
+                        + "\nDescrição: " + descricoes[i]
+                        + "\nValor: R$ " + valores[i]
+                        + "\nVencimento: " + vencimentos[i]
+                        + "\nSituação: " + situacao
+                        + "\n-------------------------\n";
+
+                encontrados++;
+            }
+        }
+
+        if (encontrados == 0) {
+            JOptionPane.showMessageDialog(null,
+                    "Nenhuma despesa encontrada!");
+        } else {
+            JOptionPane.showMessageDialog(null,
+                    "Despesas encontradas: " + encontrados
+                    + "\n" + mensagem);
+        }
+    }
+
+    static void mostrarDespesa(int posicao) {
+
+        String situacao = pagas[posicao] ? "Paga"
+                : (vencimentos[posicao].isBefore(LocalDate.now())
+                ? "Vencida" : "Pendente");
+
+        String mensagem = "Documento: " + documentos[posicao]
+                + "\nBeneficiário: " + beneficiarios[posicao]
+                + "\nDescrição: " + descricoes[posicao]
+                + "\nValor: R$ " + valores[posicao]
+                + "\nVencimento: " + vencimentos[posicao]
+                + "\nSituação: " + situacao;
+
+        JOptionPane.showMessageDialog(null, mensagem);
+    }
+
     public static void main(String[] args) {
 
         int opcao = 0;
@@ -25,6 +182,9 @@ public class Main {
                     + "2. Listar Despesas\n"
                     + "3. Sair\n\n"
                     + "4. Dar baixa em despesa\n"
+                    + "5. Excluir despesa\n"
+                    + "6. Resumo financeiro\n"
+                    + "7. Pesquisar despesa\n"
                     + "Digite a opção desejada:"
             );
 
@@ -46,6 +206,15 @@ public class Main {
                     break;
                 case 4:
                     darBaixa();
+                    break;
+                case 5:
+                    excluirConta();
+                    break;
+                case 6:
+                    resumoFinanceiro();
+                    break;
+                case 7:
+                    pesquisarConta();
                     break;
                 default:
                     JOptionPane.showMessageDialog(null, "Opção inválida!");
@@ -140,6 +309,7 @@ public class Main {
             valores[i] = valores[i + 1];
             vencimentos[i] = vencimentos[i + 1];
             saldoDevedor[i] = saldoDevedor[i + 1];
+            pagas[i] = pagas[i + 1];
         }
         quantidade--;
         JOptionPane.showMessageDialog(null, "Conta excluída com sucesso");

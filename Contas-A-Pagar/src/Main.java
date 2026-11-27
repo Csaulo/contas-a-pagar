@@ -12,6 +12,7 @@ public class Main {
     static LocalDate[] vencimentos = new LocalDate[TAM];
     static int quantidade = 0;
     static double[] saldoDevedor = new double[TAM];
+    static boolean[] pagas = new boolean[TAM];
 
     public static void main(String[] args) {
 
@@ -23,6 +24,7 @@ public class Main {
                     + "1. Cadastrar Despesa\n"
                     + "2. Listar Despesas\n"
                     + "3. Sair\n\n"
+                    + "4. Dar baixa em despesa\n"
                     + "Digite a opção desejada:"
             );
 
@@ -37,16 +39,68 @@ public class Main {
                     cadastrarConta();
                     break;
                 case 2:
-                    JOptionPane.showMessageDialog(null, "Módulo de listagem em construção.");
+                    listarContas();
                     break;
                 case 3:
                     JOptionPane.showMessageDialog(null, "Encerrando o sistema...");
+                    break;
+                case 4:
+                    darBaixa();
                     break;
                 default:
                     JOptionPane.showMessageDialog(null, "Opção inválida!");
             }
 
         } while (opcao != 3);
+    }
+
+    static void darBaixa() {
+
+        String documento = JOptionPane.showInputDialog(
+                "Digite o documento da despesa que deseja pagar:"
+        );
+
+        if (documento == null) {
+            return;
+        }
+
+        int posicao = localizarConta(documento);
+
+        if (posicao == -1) {
+            JOptionPane.showMessageDialog(null, "Despesa não encontrada!");
+            return;
+        }
+
+        if (pagas[posicao]) {
+            JOptionPane.showMessageDialog(null, "Essa despesa já está paga!");
+            return;
+        }
+
+        pagas[posicao] = true;
+
+        JOptionPane.showMessageDialog(null, "Despesa paga com sucesso!");
+    }
+
+    static void listarContas() {
+        if (quantidade == 0) {
+            JOptionPane.showMessageDialog(null, "Nenhuma despesa cadastrada!");
+            return;
+        }
+
+        String mensagem = "";
+
+        for (int i = 0; i < quantidade; i++) {
+            mensagem += "Documento: " + documentos[i]
+                    + "\nBeneficiário: " + beneficiarios[i]
+                    + "\nDescrição: " + descricoes[i]
+                    + "\nValor: R$ " + valores[i]
+                    + "\nVencimento: " + vencimentos[i]
+                    + "\nSituação: " + (pagas[i] ? "Paga"
+                            : (vencimentos[i].isBefore(LocalDate.now()) ? "Vencida" : "Pendente"))
+                    + "\n-------------------------\n";
+        }
+
+        JOptionPane.showMessageDialog(null, mensagem);
     }
 
     static int localizarConta(String documento) {
@@ -129,7 +183,21 @@ public class Main {
             return;
         }
 
-        double valor = Double.parseDouble(entrada);
+        double valor;
+
+        try {
+            valor = Double.parseDouble(entrada);
+
+            if (valor <= 0) {
+                JOptionPane.showMessageDialog(null, "Digite um valor maior que zero!");
+                return;
+            }
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Valor inválido! Digite apenas números.");
+            return;
+        }
+
         valores[posicao] = valor;
 
         String data = JOptionPane.showInputDialog("Digite a data de vencimento (AAAA-MM-DD)");
@@ -137,7 +205,14 @@ public class Main {
         if (data == null) {
             return;
         }
-        vencimentos[posicao] = LocalDate.parse(data);
+        try {
+            vencimentos[posicao] = LocalDate.parse(data);
+
+        } catch (java.time.format.DateTimeParseException e) {
+            JOptionPane.showMessageDialog(null,
+                    "Data inválida! Use o formato AAAA-MM-DD.");
+            return;
+        }
         quantidade++;
 
         JOptionPane.showMessageDialog(null, "Despesa cadastrada com sucesso!");

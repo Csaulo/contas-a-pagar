@@ -19,31 +19,34 @@ public class Main {
         int totalPagas = 0;
         int totalPendentes = 0;
         int totalVencidas = 0;
+
         double valorTotal = 0;
         double valorPago = 0;
         double valorVencido = 0;
         double valorPendente = 0;
-
         double totalEmAberto = 0;
 
         for (int i = 0; i < quantidade; i++) {
+
             valorTotal += valores[i];
+
+            valorPago += valores[i] - saldoDevedor[i];
 
             if (pagas[i]) {
                 totalPagas++;
-                valorPago += valores[i];
 
             } else if (vencimentos[i].isBefore(LocalDate.now())) {
                 totalVencidas++;
-                totalEmAberto += valores[i];
-                valorVencido += valores[i];
+                valorVencido += saldoDevedor[i];
 
             } else {
                 totalPendentes++;
-                totalEmAberto += valores[i];
-                valorPendente += valores[i];
+                valorPendente += saldoDevedor[i];
             }
+
+            totalEmAberto += saldoDevedor[i];
         }
+
         String mensagem = "=== RESUMO FINANCEIRO ===\n\n"
                 + "Total de despesas: " + quantidade
                 + "\nDespesas pagas: " + totalPagas
@@ -55,6 +58,7 @@ public class Main {
                 + "\nValor já pago: R$ " + valorPago
                 + "\nValor vencido: R$ " + valorVencido
                 + "\nValor pendente: R$ " + valorPendente;
+
         JOptionPane.showMessageDialog(null, mensagem);
     }
 
@@ -226,7 +230,7 @@ public class Main {
     static void darBaixa() {
 
         String documento = JOptionPane.showInputDialog(
-                "Digite o documento da despesa que deseja pagar:"
+                "Digite o documento da despesa:"
         );
 
         if (documento == null) {
@@ -241,13 +245,51 @@ public class Main {
         }
 
         if (pagas[posicao]) {
-            JOptionPane.showMessageDialog(null, "Essa despesa já está paga!");
+            JOptionPane.showMessageDialog(null, "Essa despesa já está totalmente paga!");
             return;
         }
 
-        pagas[posicao] = true;
+        JOptionPane.showMessageDialog(null,
+                "Beneficiário: " + beneficiarios[posicao]
+                + "\nDescrição: " + descricoes[posicao]
+                + "\nValor original: R$ " + valores[posicao]
+                + "\nSaldo devedor: R$ " + saldoDevedor[posicao]
+        );
 
-        JOptionPane.showMessageDialog(null, "Despesa paga com sucesso!");
+        String entradaPagamento = JOptionPane.showInputDialog(
+                "Digite o valor que deseja pagar:"
+        );
+
+        if (entradaPagamento == null) {
+            return;
+        }
+
+        if (validarValor(entradaPagamento) == false) {
+            JOptionPane.showMessageDialog(null, "Valor inválido!");
+            return;
+        }
+
+        double pagamento = Double.parseDouble(entradaPagamento);
+
+        if (pagamento <= 0 || pagamento > saldoDevedor[posicao]) {
+            JOptionPane.showMessageDialog(null,
+                    "O pagamento deve ser maior que zero e não pode ultrapassar o saldo devedor!");
+            return;
+        }
+
+        saldoDevedor[posicao] -= pagamento;
+
+        if (saldoDevedor[posicao] < 0.01) {
+            saldoDevedor[posicao] = 0;
+            pagas[posicao] = true;
+        }
+
+        JOptionPane.showMessageDialog(null,
+                "Pagamento registrado com sucesso!"
+                + "\nValor pago: R$ " + pagamento
+                + "\nSaldo restante: R$ " + saldoDevedor[posicao]
+                + "\nSituação: " + (pagas[posicao] ? "Paga" : "Pagamento parcial")
+        );
     }
 
     static void listarContas() {
@@ -369,6 +411,8 @@ public class Main {
         }
 
         valores[posicao] = valor;
+        saldoDevedor[posicao] = valor;
+        pagas[posicao] = false;
 
         String data = JOptionPane.showInputDialog("Digite a data de vencimento (AAAA-MM-DD)");
 
@@ -383,8 +427,25 @@ public class Main {
                     "Data inválida! Use o formato AAAA-MM-DD.");
             return;
         }
+
         quantidade++;
 
         JOptionPane.showMessageDialog(null, "Despesa cadastrada com sucesso!");
     }
+
+    static boolean validarValor(String entrada) {
+
+        if (entrada == null || entrada.trim().isEmpty()) {
+            return false;
+        }
+
+        try {
+            double valor = Double.parseDouble(entrada);
+            return valor > 0 && Double.isFinite(valor);
+
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
 }
